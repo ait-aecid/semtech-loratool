@@ -6,7 +6,6 @@ sent to the application server
 * Author(s): tkraner
 """
 
-import os
 import base64
 import string
 import struct
@@ -14,7 +13,6 @@ from binascii import unhexlify
 from impacket.crypto import AES_CMAC
 from adafruit_tinylora.adafruit_tinylora_encryption import AES
 # from datetime import datetime
-from dotenv import load_dotenv
 from datagramsender import send_datagram
 
 mhdr = '80'
@@ -24,7 +22,7 @@ fport = '01'
 
 phypayloadsize = 0
 
-verbose = True
+verbose = False
 
 def reverse_hex_order(hex_string: string):
     """ Reverses the order of a given hex-string (little endian <-> big endian) """
@@ -46,7 +44,7 @@ def form_phy_payload(appskey: string, nwkskey: string, devaddr: string, unenc_ms
 
     # Encrypts the message using the adafruit_tinylora implementation of AES.
     # (https://github.com/adafruit/Adafruit_CircuitPython_TinyLoRa)
-    encryptor = AES(unhexlify(reverse_hex_order(devaddr)), unhexlify(appskey), unhexlify(nwkskey), fcnt) #0x010F calculate_fcnt(fcnt, 'big'
+    encryptor = AES(unhexlify(reverse_hex_order(devaddr)), unhexlify(appskey), unhexlify(nwkskey), fcnt) 
     encr_msg = encryptor.encrypt(bytearray.fromhex(unenc_msg))
     if verbose:
         print(f'Encrypted message = {encr_msg.hex().upper()}')
@@ -90,8 +88,7 @@ def string_to_hex_string(text: string):
     """ Takes a string, encodes it into an uppercase hex string """
     return text.encode().hex().upper()
 
-
-def form_udp_message(phypayload: string):
+def form_udp_message(phypayload: string, gateway_eui):
     """ Formats the given PHYPayload string into the required
         UDP PUSH-DATA message format. 
         Formatting info derived from https://github.com/Lora-net/packet_forwarder/blob/master/PROTOCOL.TXT
@@ -106,19 +103,3 @@ def form_udp_message(phypayload: string):
     if verbose:
         print(f'UDP PUSH-DATA message = {message}')
     return message
-
-# Loading secrets from the .env file
-load_dotenv()
-appskey = os.getenv('APPSKEY')
-nwkskey = os.getenv('NWKSKEY')
-devaddr = os.getenv('DEVADDR')
-target_ip = os.getenv('TARGET_IP')
-target_port = int(os.getenv('TARGET_PORT'))
-gateway_eui = os.getenv('GATEWAY_EUI')
-
-# Generating the UDP message 
-phy_payload = form_phy_payload(appskey, nwkskey, devaddr, "01da", 281)
-udp_message = form_udp_message(phy_payload)
-
-# Sending the UDP message
-#send_datagram(unhexlify(udp_message), target_ip, target_port)
