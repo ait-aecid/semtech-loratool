@@ -1,7 +1,7 @@
 """
 `packetbuilder`
 ======================================================
-Supplies all the functions for building a packet to be
+Supplies all the functions for building a udp message to be
 sent to the application server
 * Author(s): tkraner
 """
@@ -13,9 +13,9 @@ import struct
 from binascii import unhexlify
 from impacket.crypto import AES_CMAC
 from adafruit_tinylora.adafruit_tinylora_encryption import AES
-from datetime import datetime
+# from datetime import datetime
 from dotenv import load_dotenv
-
+from datagramsender import send_datagram
 
 mhdr = '80'
 fctrl = '82'
@@ -24,7 +24,7 @@ fport = '01'
 
 phypayloadsize = 0
 
-verbose = False
+verbose = True
 
 def reverse_hex_order(hex_string: string):
     """ Reverses the order of a given hex-string (little endian <-> big endian) """
@@ -33,7 +33,7 @@ def reverse_hex_order(hex_string: string):
     new_string = ''
     for x in range(len(hex_string) - 2,  -1, -2):
         new_string += hex_string[x]
-        new_string += hex_string[x+1]
+        new_string += hex_string[x + 1]
     if verbose:
         print(f'New String: {new_string}')
     return new_string
@@ -81,18 +81,44 @@ def form_phy_payload(appskey: string, nwkskey: string, devaddr: string, unenc_ms
 
 def calculate_fcnt(number: int):
     """ Form the little endian hex string represantation of an int number, max value is 65535 """
+    returnstring = struct.pack('<Q', number).hex().upper()[:4]
     if verbose:
-        print(struct.pack('<Q', number).hex().upper()[:4])
-    return struct.pack('<Q', number).hex().upper()[:4]
+        print(f'Little endian representation of {number}: {returnstring}')
+    return returnstring
+
+def string_to_hex_string(text: string):
+    """ Takes a string, encodes it into an uppercase hex string """
+    return text.encode().hex().upper()
 
 
-def form_phy_packet(phypayload):
-    print('TODO')
+def form_udp_message(phypayload: string):
+    """ Formats the given PHYPayload string into the required
+        UDP PUSH-DATA message format. 
+        Formatting info derived from https://github.com/Lora-net/packet_forwarder/blob/master/PROTOCOL.TXT
+        and reverse engineering """
 
+    json_obj = f'{{"rxpk":[{{"tmst":3003866827,"time":"2022-08-10T10:00:17.256635Z","chan":1,"rfch":1,"freq":868.300000,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","lsnr":10.5,"rssi":-49,"size":19,"data":"{phypayload}"}}]}}'
+    json_obj = string_to_hex_string(json_obj)
+    protocol_vers = unhexlify('01').hex()
+    rand_tok =  unhexlify('1234').hex()
+    push_data = unhexlify('00').hex()
+    message = f'{protocol_vers}{rand_tok}{push_data}{gateway_eui}{json_obj}' 
+    if verbose:
+        print(f'UDP PUSH-DATA message = {message}')
+    return message
 
+# Loading secrets from the .env file
 load_dotenv()
 appskey = os.getenv('APPSKEY')
 nwkskey = os.getenv('NWKSKEY')
 devaddr = os.getenv('DEVADDR')
+target_ip = os.getenv('TARGET_IP')
+target_port = int(os.getenv('TARGET_PORT'))
+gateway_eui = os.getenv('GATEWAY_EUI')
 
-print(form_phy_payload(appskey, nwkskey, devaddr, '01da', 271))
+# Generating the UDP message 
+phy_payload = form_phy_payload(appskey, nwkskey, devaddr, "01da", 281)
+udp_message = form_udp_message(phy_payload)
+
+# Sending the UDP message
+#send_datagram(unhexlify(udp_message), target_ip, target_port)
