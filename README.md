@@ -1,5 +1,5 @@
 # semtech-loratool
-This util sends encrypted lorapackets using the semtech udp-protocol to the gateway. 
+This util sends encrypted lorapackets using the semtech udp-protocol to the network server. 
 
 
 # Dependencies
@@ -10,9 +10,7 @@ This util sends encrypted lorapackets using the semtech udp-protocol to the gate
 # Usage
 1. Install the dependencies: 
    ```
-    pip3 install impacket
-    pip3 install adafruit-circuitpython-tinylora
-    pip3 install python-dotenv
+    pip3 install -r requirements.txt
     ```
 2. Clone the repository
 3. Set the required environment variables in the file "src/example.env" and rename it to ".env"
