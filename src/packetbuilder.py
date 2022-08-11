@@ -15,13 +15,6 @@ from adafruit_tinylora.adafruit_tinylora_encryption import AES
 # from datetime import datetime
 from datagramsender import send_datagram
 
-mhdr = '80'
-fctrl = '82'
-fopts = '0306'
-fport = '01'
-
-phypayloadsize = 0
-
 verbose = False
 
 def reverse_hex_order(hex_string: string):
@@ -37,10 +30,8 @@ def reverse_hex_order(hex_string: string):
     return new_string
     
 
-def form_phy_payload(appskey: string, nwkskey: string, devaddr: string, unenc_msg: string, fcnt: int):
-    """ Constructs a Base64-encoded PHYPayload given the hard coded parameters above """
-
-    global phypayloadsize # global variable to forward the payload size to the packet formatter
+def form_phy_payload(appskey: string, nwkskey: string, devaddr: string, unenc_msg: string, fcnt: int, mhdr = '80', fctrl = '82', fopts = '0306', fport = '01'):
+    """ Constructs a Base64-encoded PHYPayload given the parameters above """
 
     # Encrypts the message using the adafruit_tinylora implementation of AES.
     # (https://github.com/adafruit/Adafruit_CircuitPython_TinyLoRa)
