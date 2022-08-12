@@ -14,11 +14,15 @@ This util sends encrypted lorapackets using the semtech udp-protocol to the netw
     ```
 2. Clone the repository
 3. Set the required environment variables in the file "src/example.env" and rename it to ".env"
-4. In main.py substitute the values of the variables `message` (message/payload to encrypt and send) and `fcnt` (frame counter value)
-5. Execute main.py
+4. Execute main.py with command line parameters:
+    - `-m` followed by the message to be sent (mandatory)
+    - `-f` followed bt the framecount (mandatory)
+    - `-v` for verbose output (optional)
+    - `-d` for a dryrun (packet will
+be generated but not sent) (optional)
     ```
     cd src
-    python3 main.py
+    ./main.py -m "01AB" -f 123 -v
     ```
 
 
@@ -28,11 +32,10 @@ The program will then:
 3. construct the PHYPayload,
 4. encode it to base64,
 5. construct the UDP PUSH_DATA message,
-6. send the UDP datagram to the specified IP address and port using UDP.
+6. send the UDP datagram to the specified IP address and port using UDP. (unless the command line parameter -d is passed)
 
 # Additional Info
 
-- Setting the variable `verbose` in packetbuilder.py to True will display information to stdout about the intermediate steps while building the UDP message.
 - A lot of parameters that can be individually set in PHYPayload or the UDP message have been hardcoded to be equal to observed parameters in our testbed. Future versions of this tool might make this further customizable.
 
 # Resources
