@@ -1,5 +1,5 @@
 # semtech-loratool
-This util sends encrypted lorapackets using the semtech udp-protocol to the network server. 
+This util sends encrypted lorapackets using the semtech udp-protocol to the network server.
 
 
 # Dependencies
@@ -8,7 +8,7 @@ This util sends encrypted lorapackets using the semtech udp-protocol to the netw
 - [python-dotenv](https://github.com/theskumar/python-dotenv)
 
 # Usage
-1. Install the dependencies: 
+1. Install the dependencies:
    ```
     pip3 install -r requirements.txt
     ```
@@ -33,7 +33,7 @@ The program will then:
 # Additional Info
 
 - Setting the variable `verbose` in packetbuilder.py to True will display information to stdout about the intermediate steps while building the UDP message.
-- A lot of parameters that can be individually set in PHYPayload or the UDP message have been hardcoded to be equal to observed parameters in our testbed. Future versions of this tool might make this further customizable. 
+- A lot of parameters that can be individually set in PHYPayload or the UDP message have been hardcoded to be equal to observed parameters in our testbed. Future versions of this tool might make this further customizable.
 
 # Resources
 - [LoraWAN specification](https://lora-alliance.org/wp-content/uploads/2020/11/lorawantm_specification_-v1.1.pdf)
