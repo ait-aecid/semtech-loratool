@@ -15,9 +15,8 @@ from adafruit_tinylora.adafruit_tinylora_encryption import AES
 # from datetime import datetime
 from datagramsender import send_datagram
 
-verbose = False
 
-def reverse_hex_order(hex_string: string):
+def reverse_hex_order(hex_string: string, verbose= False):
     """ Reverses the order of a given hex-string (little endian <-> big endian) """
     if verbose:
         print(f'Original String: {hex_string}')
@@ -30,22 +29,22 @@ def reverse_hex_order(hex_string: string):
     return new_string
     
 
-def form_phy_payload(appskey: string, nwkskey: string, devaddr: string, unenc_msg: string, fcnt: int, mhdr = '80', fctrl = '82', fopts = '0306', fport = '01'):
+def form_phy_payload(appskey: string, nwkskey: string, devaddr: string, unenc_msg: string, fcnt: int, mhdr = '80', fctrl = '82', fopts = '0306', fport = '01', verbose = False):
     """ Constructs a Base64-encoded PHYPayload given the parameters above """
 
     # Encrypts the message using the adafruit_tinylora implementation of AES.
     # (https://github.com/adafruit/Adafruit_CircuitPython_TinyLoRa)
-    encryptor = AES(unhexlify(reverse_hex_order(devaddr)), unhexlify(appskey), unhexlify(nwkskey), fcnt) 
+    encryptor = AES(unhexlify(reverse_hex_order(devaddr, verbose)), unhexlify(appskey), unhexlify(nwkskey), fcnt) 
     encr_msg = encryptor.encrypt(bytearray.fromhex(unenc_msg))
     if verbose:
         print(f'Encrypted message = {encr_msg.hex().upper()}')
 
     # Formation of the PHYPayload without MIC to calculate MIC.
-    phypayload = mhdr + devaddr + fctrl + calculate_fcnt(fcnt) + fopts + fport + encr_msg.hex().upper()
+    phypayload = mhdr + devaddr + fctrl + calculate_fcnt(fcnt, verbose) + fopts + fport + encr_msg.hex().upper()
 
     # Constructing the B0 parameter for calculating the MIC as defined in the LoRaWAN Specification
     # (https://lora-alliance.org/wp-content/uploads/2020/11/lorawantm_specification_-v1.1.pdf).
-    littlend = calculate_fcnt(fcnt)
+    littlend = calculate_fcnt(fcnt, verbose)
     b0 = f'490000000000{devaddr}{littlend}000000' + (len(phypayload) // 2).to_bytes(1, byteorder='big').hex().upper()
 
     length = (len(b0) + len(phypayload)) // 2 # Calculating the length of the string for the AES_CMAC operation.
@@ -68,7 +67,7 @@ def form_phy_payload(appskey: string, nwkskey: string, devaddr: string, unenc_ms
         print(f'Base64-encoded packet = {base64.b64encode(unhexlify(phypayload)).decode()}')
     return base64.b64encode(unhexlify(phypayload)).decode()
 
-def calculate_fcnt(number: int):
+def calculate_fcnt(number: int, verbose = False):
     """ Form the little endian hex string represantation of an int number, max value is 65535 """
     returnstring = struct.pack('<Q', number).hex().upper()[:4]
     if verbose:
@@ -79,7 +78,7 @@ def string_to_hex_string(text: string):
     """ Takes a string, encodes it into an uppercase hex string """
     return text.encode().hex().upper()
 
-def form_udp_message(phypayload: string, gateway_eui):
+def form_udp_message(phypayload: string, gateway_eui, verbose = False):
     """ Formats the given PHYPayload string into the required
         UDP PUSH-DATA message format. 
         Formatting info derived from https://github.com/Lora-net/packet_forwarder/blob/master/PROTOCOL.TXT
