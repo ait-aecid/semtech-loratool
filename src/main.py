@@ -23,16 +23,17 @@ from packetbuilder import form_phy_payload, form_udp_message
 
 def main(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument("message", type=str, help="message to be sent")
+    parser.add_argument("message", type=str, help="message to be sent as a hex string")
     parser.add_argument("fcnt", type=int, help="current framecount")
     parser.add_argument(
-        "-v", "--verbosity", help="increase output verbosity",
-        action="store_true"
-        )
+        "-v", "--verbosity", help="increase output verbosity", action="store_true"
+    )
     parser.add_argument(
-        "-d", "--dryrun", help="generate the UDP message without sending it",
-        action="store_true"
-        )
+        "-d",
+        "--dryrun",
+        help="generate the UDP message without sending it",
+        action="store_true",
+    )
     args = parser.parse_args()
     message = args.message
     fcnt = args.fcnt
@@ -41,26 +42,25 @@ def main(argv):
 
     # Loading secrets from the .env file
     load_dotenv()
-    appskey = os.getenv('APPSKEY')
-    nwkskey = os.getenv('NWKSKEY')
-    devaddr = os.getenv('DEVADDR')
-    target_ip = os.getenv('TARGET_IP')
-    target_port = int(os.getenv('TARGET_PORT'))
-    gateway_eui = os.getenv('GATEWAY_EUI')
+    appskey = os.getenv("APPSKEY")
+    nwkskey = os.getenv("NWKSKEY")
+    devaddr = os.getenv("DEVADDR")
+    target_ip = os.getenv("TARGET_IP")
+    target_port = int(os.getenv("TARGET_PORT"))
+    gateway_eui = os.getenv("GATEWAY_EUI")
 
     # Generating the UDP message
     phy_payload = form_phy_payload(
         appskey, nwkskey, devaddr, message, fcnt, verbose=verbose
-        )
+    )
     udp_message = form_udp_message(phy_payload, gateway_eui, verbose)
 
     # Sending the UDP message
-    if(not dryrun):
-        # send_datagram(unhexlify(udp_message), target_ip, target_port)
+    if not dryrun:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.sendto(unhexlify(udp_message), (target_ip, target_port))
         s.close()
-        print('Datagram sent!')
+        print("Datagram sent!")
 
 
 if __name__ == "__main__":
