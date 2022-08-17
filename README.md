@@ -20,7 +20,7 @@ This util sends encrypted lorapackets to the network server using the semtech ud
     usage: main.py [-h] [-v] [-d] message fcnt
 
     positional arguments:
-      message          message to be sent
+      message          message to be sent as a hex string
       fcnt             current framecount
 
     optional arguments:
