@@ -134,9 +134,11 @@ def form_udp_message(
                 "data": phypayload
         }]
     }
-    print(
-        f"UDP PUSH-DATA JSON = {json.dumps(json_dict, separators=(',', ':'))}"
-        )
+    if verbose:
+        print(
+            f"UDP PUSH-DATA JSON = "
+            f"{json.dumps(json_dict, separators=(',', ':'))}"
+            )
     json_obj = string_to_hex_string(
         json.dumps(json_dict, separators=(',', ':'))
         )

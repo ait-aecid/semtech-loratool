@@ -1,5 +1,5 @@
 # semtech-loratool
-This util sends encrypted lorapackets using the semtech udp-protocol to the network server.
+This util sends encrypted lorapackets to the network server using the semtech udp-protocol.
 
 
 # Dependencies
@@ -13,13 +13,22 @@ This util sends encrypted lorapackets using the semtech udp-protocol to the netw
     pip3 install -r requirements.txt
     ```
 2. Clone the repository
-3. Set the required environment variables in the file "src/example.env" and rename it to ".env"
+3. Set the required environment variables in the file [src/example.env](https://github.com/ait-aecid/semtech-loratool/blob/main/src/example.env) and rename it to ".env"
 4. Execute main.py with command line parameters:
-    - `-m` followed by the message to be sent (mandatory)
-    - `-f` followed bt the framecount (mandatory)
-    - `-v` for verbose output (optional)
-    - `-d` for a dryrun (packet will
-be generated but not sent) (optional)
+
+    ```
+    usage: main.py [-h] [-v] [-d] message fcnt
+
+    positional arguments:
+      message          message to be sent
+      fcnt             current framecount
+
+    optional arguments:
+      -h, --help       show help message and exit
+      -v, --verbosity  increase output verbosity
+      -d, --dryrun     generate the UDP message without sending it
+    ```
+    Example usage:
     ```
     cd src
     ./main.py -m "01AB" -f 123 -v
@@ -32,7 +41,7 @@ The program will then:
 3. construct the PHYPayload,
 4. encode it to base64,
 5. construct the UDP PUSH_DATA message,
-6. send the UDP datagram to the specified IP address and port using UDP. (unless the command line parameter -d is passed)
+6. send the UDP datagram to the specified IP address and port using UDP. (unless the command line parameter "-d" or "--dryrun" is passed)
 
 # Additional Info
 
