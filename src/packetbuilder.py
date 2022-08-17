@@ -7,6 +7,7 @@ sent to the application server
 """
 
 import base64
+import json
 import struct
 from binascii import unhexlify
 
@@ -103,23 +104,49 @@ def string_to_hex_string(text: str):
     return text.encode().hex().upper()
 
 
-def form_udp_message(phypayload: str, gateway_eui, verbose=False):
-    """ Formats the given PHYPayload string into the required
-        UDP PUSH-DATA message format.
-        Formatting info derived from
+def form_udp_message(
+        phypayload: str, gateway_eui, verbose=False, tmst=3003866827,
+        time="2022-08-10T10:00:17.256635Z", chan=1, rfch=1, freq=868.300000,
+        stat=1, modu="LORA", datr="SF7BW125", codr="4/5", lsnr=10.5, rssi=-49,
+        size=19, protocol_version="01", rand_tok="1234"
+        ):
+    """ Formats a given PHYPayload string into the required
+        UDP PUSH-DATA message format. Formatting info derived from
         https://github.com/Lora-net/packet_forwarder/blob/master/PROTOCOL.TXT
-        and reverse engineering """
+        and reverse engineering. Values for most of the parameters are pre-set
+        but can be passed as parameters with the function call.
+    """
 
-    json_obj = (f'{{"rxpk":[{{"tmst":3003866827,"time":'
-                f'"2022-08-10T10:00:17.256635Z","chan":1,"rfch":1,'
-                f'"freq":868.300000,"stat":1,"modu":"LORA","datr":'
-                f'"SF7BW125","codr":"4/5","lsnr":10.5,"rssi":-49,'
-                f'"size":19,"data":"{phypayload}"}}]}}')
-    json_obj = string_to_hex_string(json_obj)
-    protocol_vers = unhexlify('01').hex()
-    rand_tok = unhexlify('1234').hex()
-    push_data = unhexlify('00').hex()
-    message = f'{protocol_vers}{rand_tok}{push_data}{gateway_eui}{json_obj}'
+    json_dict = {
+        "rxpk": [{
+                "tmst": tmst,
+                "time": time,
+                "chan": chan,
+                "rfch": rfch,
+                "freq": freq,
+                "stat": stat,
+                "modu": modu,
+                "datr": datr,
+                "codr": codr,
+                "lsnr": lsnr,
+                "rssi": rssi,
+                "size": size,
+                "data": phypayload
+        }]
+    }
+    print(
+        f"UDP PUSH-DATA JSON = {json.dumps(json_dict, separators=(',', ':'))}"
+        )
+    json_obj = string_to_hex_string(
+        json.dumps(json_dict, separators=(',', ':'))
+        )
+    protocol_vers_hex = unhexlify(protocol_version).hex()
+    rand_tok_hex = unhexlify(rand_tok).hex()
+    push_data_hex = unhexlify('00').hex()
+    message = (
+        f'{protocol_vers_hex}{rand_tok_hex}{push_data_hex}{gateway_eui}'
+        f'{json_obj}'
+        )
     if verbose:
         print(f'UDP PUSH-DATA message = {message}')
     return message
