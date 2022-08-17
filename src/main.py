@@ -10,39 +10,34 @@ be generated but not sent) respectively. Help is accessed with [-h].
 * Author(s): tkraner
 """
 
-import getopt
+import argparse
 import os
+import socket
 import sys
 from binascii import unhexlify
 
 from dotenv import load_dotenv
 
-from datagramsender import send_datagram
 from packetbuilder import form_phy_payload, form_udp_message
 
 
 def main(argv):
-    message = ''
-    fcnt = 0
-    verbose = False
-    dryrun = False
-    try:
-        opts, args = getopt.getopt(argv, "m:f:vhd")
-    except getopt.GetoptError:
-        print('main.py -m <message> -f <framecount> [-v] [-d]')
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print('main.py -m <message> -f <framecount> [-v] [-d]')
-            sys.exit()
-        elif opt in ("-m"):
-            message = arg
-        elif opt in ("-f"):
-            fcnt = int(arg)
-        elif opt in ("-v"):
-            verbose = True
-        elif opt in ("-d"):
-            dryrun = True
+    parser = argparse.ArgumentParser()
+    parser.add_argument("message", type=str, help="message to be sent")
+    parser.add_argument("fcnt", type=int, help="current framecount")
+    parser.add_argument(
+        "-v", "--verbosity", help="increase output verbosity",
+        action="store_true"
+        )
+    parser.add_argument(
+        "-d", "--dryrun", help="generate the UDP message without sending it",
+        action="store_true"
+        )
+    args = parser.parse_args()
+    message = args.message
+    fcnt = args.fcnt
+    verbose = args.verbosity
+    dryrun = args.dryrun
 
     # Loading secrets from the .env file
     load_dotenv()
@@ -61,7 +56,10 @@ def main(argv):
 
     # Sending the UDP message
     if(not dryrun):
-        send_datagram(unhexlify(udp_message), target_ip, target_port)
+        # send_datagram(unhexlify(udp_message), target_ip, target_port)
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.sendto(unhexlify(udp_message), (target_ip, target_port))
+        s.close()
         print('Datagram sent!')
 
 
