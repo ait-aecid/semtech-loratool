@@ -31,7 +31,7 @@ This util sends encrypted lorapackets to the network server using the semtech ud
     Example usage:
     ```
     cd src
-    ./main.py -m "01AB" -f 123 -v
+    ./main.py "01AB" 123 -v
     ```
 
 
